@@ -1,0 +1,354 @@
+<html>
+<head>
+<title>main.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6897bb;}
+.s3 { color: #6a8759;}
+.s4 { color: #808080;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+main.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">sys</span>
+<span class="s0">from </span><span class="s1">time </span><span class="s0">import </span><span class="s1">sleep</span>
+<span class="s0">import </span><span class="s1">pygame</span>
+<span class="s0">import </span><span class="s1">random</span>
+<span class="s0">from </span><span class="s1">pygame.math </span><span class="s0">import </span><span class="s1">Vector2</span>
+<span class="s1">pygame.mixer.pre_init(</span><span class="s2">44100</span><span class="s0">,</span><span class="s1">-</span><span class="s2">16</span><span class="s0">,</span><span class="s2">2</span><span class="s0">,</span><span class="s2">512</span><span class="s1">)</span>
+<span class="s1">pygame.init()</span>
+<span class="s1">counter = </span><span class="s2">0</span>
+<span class="s1">cell_size = </span><span class="s2">40</span>
+<span class="s1">cell_number_x = </span><span class="s2">20</span>
+<span class="s1">cell_number_y = </span><span class="s2">20</span>
+<span class="s1">cell_number = </span><span class="s2">20</span>
+<span class="s1">screen = pygame.display.set_mode((cell_number_x * cell_size</span><span class="s0">, </span><span class="s1">cell_number_y * cell_size))</span>
+
+<span class="s1">game_active = </span><span class="s0">True</span>
+<span class="s1">go = </span><span class="s0">True</span>
+<span class="s0">class </span><span class="s1">Fruit():</span>
+    <span class="s0">def </span><span class="s1">__init__(self):</span>
+        <span class="s1">self.randomize()</span>
+
+    <span class="s0">def </span><span class="s1">draw_fruit(self):</span>
+        <span class="s1">self.fruit_rect = pygame.Rect(int(self.pos.x * cell_size)</span><span class="s0">, </span><span class="s1">int(self.pos.y * cell_size)</span><span class="s0">, </span><span class="s1">cell_size</span><span class="s0">, </span><span class="s1">cell_size)</span>
+        <span class="s1">screen.blit(apple</span><span class="s0">,</span><span class="s1">self.fruit_rect)</span>
+    <span class="s0">def </span><span class="s1">randomize(self):</span>
+        <span class="s1">self.x = random.randint(</span><span class="s2">0</span><span class="s0">, </span><span class="s1">cell_number_x - </span><span class="s2">1</span><span class="s1">)</span>
+        <span class="s1">self.y = random.randint(</span><span class="s2">0</span><span class="s0">, </span><span class="s1">cell_number_y -</span><span class="s2">1</span><span class="s1">)</span>
+        <span class="s1">self.pos = Vector2(self.x</span><span class="s0">, </span><span class="s1">self.y)</span>
+<span class="s0">class </span><span class="s1">Snake():</span>
+    <span class="s0">def </span><span class="s1">__init__(self):</span>
+        <span class="s1">self.body_copy = </span><span class="s0">None</span>
+        <span class="s1">self.body = [Vector2(</span><span class="s2">7</span><span class="s0">,</span><span class="s2">8</span><span class="s1">)</span><span class="s0">,</span><span class="s1">Vector2(</span><span class="s2">6</span><span class="s0">,</span><span class="s2">8</span><span class="s1">)</span><span class="s0">,</span><span class="s1">Vector2(</span><span class="s2">5</span><span class="s0">,</span><span class="s2">8</span><span class="s1">)]</span>
+        <span class="s1">self.direction = Vector2(</span><span class="s2">1</span><span class="s0">,</span><span class="s2">0</span><span class="s1">)</span>
+        <span class="s1">self.new_block = </span><span class="s0">False</span>
+
+        <span class="s1">self.head_up = pygame.image.load(</span><span class="s3">'head_up.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.head_down = pygame.image.load(</span><span class="s3">'head_down.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.head_right = pygame.image.load(</span><span class="s3">'head_right.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.head_left = pygame.image.load(</span><span class="s3">'head_left.png'</span><span class="s1">).convert_alpha( )</span>
+
+        <span class="s1">self.tail_up = pygame.image.load(</span><span class="s3">'tail_up.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.tail_down = pygame.image.load(</span><span class="s3">'tail_down.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.tail_right = pygame.image.load(</span><span class="s3">'tail_right.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.tail_left = pygame.image.load(</span><span class="s3">'tail_left.png'</span><span class="s1">).convert_alpha( )</span>
+
+        <span class="s1">self.body_vertical = pygame.image.load(</span><span class="s3">'body_vertical.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.body_horizontal = pygame.image.load(</span><span class="s3">'body_horizontal.png'</span><span class="s1">).convert_alpha( )</span>
+
+        <span class="s1">self.body_tr = pygame.image.load(</span><span class="s3">'body_tr.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.body_tl = pygame.image.load(</span><span class="s3">'body_tl.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.body_br = pygame.image.load(</span><span class="s3">'body_br.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.body_bl = pygame.image.load(</span><span class="s3">'body_bl.png'</span><span class="s1">).convert_alpha( )</span>
+        <span class="s1">self.crunch_sound = pygame.mixer.Sound(</span><span class="s3">&quot;Sound_crunch.wav&quot;</span><span class="s1">)</span>
+    <span class="s0">def </span><span class="s1">draw_snake(self):</span>
+        <span class="s0">global </span><span class="s1">snake_rect</span>
+        <span class="s1">self.update_head()</span>
+        <span class="s1">self.update_tail()</span>
+        <span class="s0">for </span><span class="s1">index</span><span class="s0">,</span><span class="s1">block </span><span class="s0">in </span><span class="s1">enumerate(self.body):</span>
+            <span class="s1">self.snake_rect = pygame.Rect(int(block.x * cell_size)</span><span class="s0">, </span><span class="s1">int(block.y * cell_size)</span><span class="s0">, </span><span class="s1">cell_size</span><span class="s0">, </span><span class="s1">cell_size)</span>
+
+            <span class="s0">if </span><span class="s1">index == </span><span class="s2">0</span><span class="s1">:</span>
+                <span class="s1">screen.blit(self.head</span><span class="s0">,</span><span class="s1">self.snake_rect)</span>
+            <span class="s0">elif </span><span class="s1">index == len(self.body) -</span><span class="s2">1</span><span class="s1">:</span>
+                <span class="s1">screen.blit(self.tail</span><span class="s0">,</span><span class="s1">self.snake_rect)</span>
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s1">previous_block = self.body[index + </span><span class="s2">1</span><span class="s1">] - block</span>
+                <span class="s1">next_block = self.body[index - </span><span class="s2">1</span><span class="s1">] - block</span>
+                <span class="s0">if </span><span class="s1">previous_block.x == next_block.x:</span>
+                    <span class="s1">screen.blit(self.body_vertical</span><span class="s0">,</span><span class="s1">self.snake_rect)</span>
+                <span class="s0">elif </span><span class="s1">previous_block.y == next_block.y:</span>
+                    <span class="s1">screen.blit(self.body_horizontal</span><span class="s0">,</span><span class="s1">self.snake_rect)</span>
+                <span class="s0">else</span><span class="s1">:</span>
+                    <span class="s0">if </span><span class="s1">previous_block.x == -</span><span class="s2">1 </span><span class="s0">and </span><span class="s1">next_block.y == -</span><span class="s2">1 </span><span class="s0">or </span><span class="s1">previous_block.y == -</span><span class="s2">1 </span><span class="s0">and </span><span class="s1">next_block.x == -</span><span class="s2">1</span><span class="s1">:</span>
+                       <span class="s1">screen.blit(self.body_tl</span><span class="s0">,</span><span class="s1">self.snake_rect)</span>
+                    <span class="s0">elif </span><span class="s1">previous_block.x == </span><span class="s2">1 </span><span class="s0">and </span><span class="s1">next_block.y == -</span><span class="s2">1 </span><span class="s0">or </span><span class="s1">previous_block.y == -</span><span class="s2">1 </span><span class="s0">and </span><span class="s1">next_block.x == </span><span class="s2">1</span><span class="s1">:</span>
+                       <span class="s1">screen.blit(self.body_tr</span><span class="s0">,</span><span class="s1">self.snake_rect)</span>
+                    <span class="s0">elif </span><span class="s1">previous_block.x == -</span><span class="s2">1 </span><span class="s0">and </span><span class="s1">next_block.y == </span><span class="s2">1 </span><span class="s0">or </span><span class="s1">previous_block.y == </span><span class="s2">1 </span><span class="s0">and </span><span class="s1">next_block.x == -</span><span class="s2">1</span><span class="s1">:</span>
+                       <span class="s1">screen.blit(self.body_bl</span><span class="s0">,</span><span class="s1">self.snake_rect)</span>
+                    <span class="s0">elif </span><span class="s1">previous_block.x == </span><span class="s2">1 </span><span class="s0">and </span><span class="s1">next_block.y == </span><span class="s2">1 </span><span class="s0">or </span><span class="s1">previous_block.y == </span><span class="s2">1 </span><span class="s0">and </span><span class="s1">next_block.x == </span><span class="s2">1</span><span class="s1">:</span>
+                       <span class="s1">screen.blit(self.body_br</span><span class="s0">,</span><span class="s1">self.snake_rect)</span>
+    <span class="s0">def </span><span class="s1">draw_grass(self):</span>
+        <span class="s1">grass_color = (</span><span class="s2">110</span><span class="s0">,</span><span class="s2">170</span><span class="s0">,</span><span class="s2">50</span><span class="s1">)</span>
+        <span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">range(cell_number):</span>
+            <span class="s0">if </span><span class="s1">row % </span><span class="s2">2 </span><span class="s1">== </span><span class="s2">0</span><span class="s1">:</span>
+                <span class="s0">for </span><span class="s1">col </span><span class="s0">in </span><span class="s1">range(cell_number):</span>
+                    <span class="s0">if </span><span class="s1">col % </span><span class="s2">2 </span><span class="s1">== </span><span class="s2">0</span><span class="s1">:</span>
+                        <span class="s1">grass_rect = pygame.Rect(col * cell_size</span><span class="s0">,</span><span class="s1">row * cell_size</span><span class="s0">,</span><span class="s1">cell_size</span><span class="s0">,</span><span class="s1">cell_size)</span>
+                        <span class="s1">pygame.draw.rect(screen</span><span class="s0">,</span><span class="s1">grass_color</span><span class="s0">,</span><span class="s1">grass_rect)</span>
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s0">for </span><span class="s1">col </span><span class="s0">in </span><span class="s1">range(cell_number):</span>
+                    <span class="s0">if </span><span class="s1">col % </span><span class="s2">2 </span><span class="s1">!= </span><span class="s2">0</span><span class="s1">:</span>
+                        <span class="s1">grass_rect = pygame.Rect(col * cell_size</span><span class="s0">, </span><span class="s1">row * cell_size</span><span class="s0">, </span><span class="s1">cell_size</span><span class="s0">, </span><span class="s1">cell_size)</span>
+                        <span class="s1">pygame.draw.rect(screen</span><span class="s0">, </span><span class="s1">grass_color</span><span class="s0">, </span><span class="s1">grass_rect)</span>
+
+
+    <span class="s0">def </span><span class="s1">update_head(self):</span>
+        <span class="s1">head_relation = self.body[</span><span class="s2">1</span><span class="s1">] - self.body[</span><span class="s2">0</span><span class="s1">]</span>
+        <span class="s0">if </span><span class="s1">head_relation == Vector2(</span><span class="s2">1</span><span class="s0">,</span><span class="s2">0</span><span class="s1">): self.head = self.head_left</span>
+        <span class="s0">elif </span><span class="s1">head_relation == Vector2(-</span><span class="s2">1</span><span class="s0">,</span><span class="s2">0</span><span class="s1">): self.head = self.head_right</span>
+        <span class="s0">elif </span><span class="s1">head_relation == Vector2(</span><span class="s2">0</span><span class="s0">,</span><span class="s2">1</span><span class="s1">): self.head = self.head_up</span>
+        <span class="s0">elif </span><span class="s1">head_relation == Vector2(</span><span class="s2">0</span><span class="s0">,</span><span class="s1">-</span><span class="s2">1</span><span class="s1">): self.head = self.head_down</span>
+
+
+
+
+
+        <span class="s4">#for block in self.body:</span>
+            <span class="s4">#snake_rect = pygame.Rect(int(block.x * cell_size), int(block.y * cell_size),cell_size,cell_size)</span>
+            <span class="s4">#pygame.draw.rect(screen,&quot;yellow&quot;,snake_rect)</span>
+    <span class="s0">def </span><span class="s1">update_tail(self):</span>
+        <span class="s1">tail_relaition = self.body[-</span><span class="s2">2</span><span class="s1">] - self.body[-</span><span class="s2">1</span><span class="s1">]</span>
+        <span class="s0">if </span><span class="s1">tail_relaition == Vector2(</span><span class="s2">1</span><span class="s0">,</span><span class="s2">0</span><span class="s1">): self.tail = self.tail_left</span>
+        <span class="s0">if </span><span class="s1">tail_relaition == Vector2(-</span><span class="s2">1</span><span class="s0">,</span><span class="s2">0</span><span class="s1">): self.tail = self.tail_right</span>
+        <span class="s0">if </span><span class="s1">tail_relaition == Vector2(</span><span class="s2">0</span><span class="s0">,</span><span class="s2">1</span><span class="s1">): self.tail = self.tail_up</span>
+        <span class="s0">if </span><span class="s1">tail_relaition == Vector2(</span><span class="s2">0</span><span class="s0">,</span><span class="s1">-</span><span class="s2">1</span><span class="s1">): self.tail = self.tail_down</span>
+
+
+    <span class="s0">def </span><span class="s1">move_snake(self):</span>
+
+        <span class="s0">if </span><span class="s1">self.new_block == </span><span class="s0">True</span><span class="s1">:</span>
+            <span class="s1">self.body_copy = self.body[:]</span>
+            <span class="s1">self.body_copy.insert(</span><span class="s2">0</span><span class="s0">,</span><span class="s1">self.body_copy[</span><span class="s2">0</span><span class="s1">] + self.direction)</span>
+            <span class="s1">self.body = self.body_copy[:]</span>
+            <span class="s1">self.new_block = </span><span class="s0">False</span>
+        <span class="s0">else</span><span class="s1">:</span>
+            <span class="s1">self.body_copy = self.body[:-</span><span class="s2">1</span><span class="s1">]</span>
+            <span class="s1">self.body_copy.insert(</span><span class="s2">0</span><span class="s0">,</span><span class="s1">self.body_copy[</span><span class="s2">0</span><span class="s1">] + self.direction)</span>
+            <span class="s1">self.body = self.body_copy[:]</span>
+
+    <span class="s0">def </span><span class="s1">add_block(self):</span>
+        <span class="s1">self.new_block = </span><span class="s0">True</span>
+    <span class="s0">def </span><span class="s1">play_crunch_sound(self):</span>
+        <span class="s1">self.crunch_sound.play()</span>
+
+<span class="s0">class </span><span class="s1">Main():</span>
+    <span class="s0">def </span><span class="s1">__init__(self):</span>
+        <span class="s1">self.Counter = </span><span class="s2">0</span>
+        <span class="s1">self.snake = Snake()</span>
+        <span class="s1">self.fruit = Fruit()</span>
+    <span class="s0">def </span><span class="s1">update(self):</span>
+        <span class="s1">self.Colission_fruit()</span>
+        <span class="s1">self.Colision_self()</span>
+        <span class="s1">self.snake.move_snake()</span>
+        <span class="s1">self.Hit_Wall()</span>
+
+
+    <span class="s0">def </span><span class="s1">draw_elements(self):</span>
+        <span class="s1">self.snake.draw_snake( )</span>
+        <span class="s1">self.fruit.draw_fruit( )</span>
+    <span class="s0">def </span><span class="s1">movement(self):</span>
+        <span class="s0">if </span><span class="s1">event.type == pygame.KEYDOWN:</span>
+            <span class="s0">if </span><span class="s1">event.key == pygame.K_w </span><span class="s0">and </span><span class="s1">self.snake.direction != Vector2(</span><span class="s2">0</span><span class="s0">,</span><span class="s2">1</span><span class="s1">):</span>
+                <span class="s1">self.snake.direction = Vector2(</span><span class="s2">0</span><span class="s0">,</span><span class="s1">-</span><span class="s2">1</span><span class="s1">)</span>
+            <span class="s0">if </span><span class="s1">event.key == pygame.K_s </span><span class="s0">and </span><span class="s1">self.snake.direction != Vector2(</span><span class="s2">0</span><span class="s0">,</span><span class="s1">-</span><span class="s2">1</span><span class="s1">):</span>
+                <span class="s1">self.snake.direction = Vector2(</span><span class="s2">0</span><span class="s0">, </span><span class="s2">1</span><span class="s1">)</span>
+            <span class="s0">if </span><span class="s1">event.key == pygame.K_a </span><span class="s0">and </span><span class="s1">self.snake.direction != Vector2(</span><span class="s2">1</span><span class="s0">,</span><span class="s2">0</span><span class="s1">):</span>
+                <span class="s1">self.snake.direction = Vector2(-</span><span class="s2">1</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span>
+            <span class="s0">if </span><span class="s1">event.key == pygame.K_d </span><span class="s0">and </span><span class="s1">self.snake.direction != Vector2(-</span><span class="s2">1</span><span class="s0">,</span><span class="s2">0</span><span class="s1">):</span>
+                <span class="s1">self.snake.direction = Vector2(</span><span class="s2">1</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span>
+
+    <span class="s0">def </span><span class="s1">Quit(self):</span>
+        <span class="s0">if </span><span class="s1">event.type == pygame.QUIT:</span>
+            <span class="s1">pygame.quit()</span>
+            <span class="s1">sys.exit()</span>
+
+    <span class="s0">def </span><span class="s1">Colission_fruit(self):</span>
+        <span class="s0">if </span><span class="s1">self.fruit.pos == self.snake.body[</span><span class="s2">0</span><span class="s1">]:</span>
+            <span class="s1">self.fruit.randomize()</span>
+            <span class="s1">self.snake.add_block()</span>
+            <span class="s1">self.Counter += </span><span class="s2">1</span>
+            <span class="s1">self.snake.play_crunch_sound()</span>
+
+        <span class="s0">for </span><span class="s1">block </span><span class="s0">in </span><span class="s1">self.snake.body[</span><span class="s2">1</span><span class="s1">:]:</span>
+            <span class="s0">if </span><span class="s1">block == self.fruit.pos:</span>
+                <span class="s1">self.fruit.randomize()</span>
+
+    <span class="s0">def </span><span class="s1">Colision_self(self):</span>
+        <span class="s0">for </span><span class="s1">block </span><span class="s0">in </span><span class="s1">self.snake.body[</span><span class="s2">1</span><span class="s1">:]:</span>
+            <span class="s0">if </span><span class="s1">block == self.snake.body[</span><span class="s2">0</span><span class="s1">]:</span>
+                <span class="s1">self.game_over()</span>
+
+
+    <span class="s0">def </span><span class="s1">Hit_Wall(self):</span>
+        <span class="s0">if not </span><span class="s2">0 </span><span class="s1">&lt;= self.snake.body[</span><span class="s2">0</span><span class="s1">].x &lt; cell_number_x:</span>
+
+            <span class="s1">self.game_over()</span>
+        <span class="s0">if not </span><span class="s2">0 </span><span class="s1">&lt;= self.snake.body[</span><span class="s2">0</span><span class="s1">].y &lt; cell_number_y:</span>
+            <span class="s1">self.game_over()</span>
+    <span class="s0">def </span><span class="s1">game_over(self):</span>
+        <span class="s0">global </span><span class="s1">game_over</span><span class="s0">,</span><span class="s1">run</span>
+        <span class="s1">game_over = </span><span class="s0">True</span>
+        <span class="s1">run = </span><span class="s0">True</span>
+        <span class="s1">font_go = pygame.font.SysFont(</span><span class="s3">&quot;Calibri&quot;</span><span class="s0">, </span><span class="s2">100</span><span class="s0">, True, False</span><span class="s1">)</span>
+        <span class="s1">You_reached = font_go.render(</span><span class="s3">&quot;You reached: &quot; </span><span class="s1">+ str(self.Counter)</span><span class="s0">, True, </span><span class="s3">&quot;White&quot;</span><span class="s1">)</span>
+        <span class="s0">while </span><span class="s1">run:</span>
+            <span class="s1">screen.fill((</span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s0">, </span><span class="s2">100</span><span class="s1">))</span>
+            <span class="s1">screen.blit(You_reached</span><span class="s0">,</span><span class="s1">[</span><span class="s2">30</span><span class="s0">,</span><span class="s2">100</span><span class="s1">])</span>
+            <span class="s1">button1.Update()</span>
+            <span class="s1">button2.Update()</span>
+            <span class="s0">for </span><span class="s1">event </span><span class="s0">in </span><span class="s1">pygame.event.get( ):</span>
+                <span class="s0">if </span><span class="s1">event.type == pygame.QUIT:</span>
+                    <span class="s1">pygame.quit( )</span>
+                    <span class="s1">sys.exit( )</span>
+            <span class="s1">pygame.display.flip( )</span>
+            <span class="s1">FPS.tick(</span><span class="s2">45</span><span class="s1">)</span>
+
+
+
+
+
+
+    <span class="s0">def </span><span class="s1">counter(self):</span>
+        <span class="s1">font = pygame.font.SysFont(</span><span class="s3">&quot;Calibri&quot;</span><span class="s0">,</span><span class="s2">25</span><span class="s0">,True,False</span><span class="s1">)</span>
+        <span class="s1">text = font.render(</span><span class="s3">&quot;Counter: &quot; </span><span class="s1">+ str(self.Counter)</span><span class="s0">,True,</span><span class="s3">&quot;White&quot;</span><span class="s1">)</span>
+        <span class="s1">score_x = int(cell_size * cell_number -</span><span class="s2">60</span><span class="s1">)</span>
+        <span class="s1">score_y = int(cell_size * cell_number - </span><span class="s2">60</span><span class="s1">)</span>
+        <span class="s1">score_rect = text.get_rect(center=(score_x</span><span class="s0">,</span><span class="s1">score_y))</span>
+        <span class="s1">apple_rect = apple.get_rect(midright=(score_rect.left</span><span class="s0">,</span><span class="s1">score_rect.centery))</span>
+        <span class="s1">bg_rect = pygame.Rect(apple_rect.left</span><span class="s0">,</span><span class="s1">apple_rect.top</span><span class="s0">,</span><span class="s1">apple_rect.width + score_rect.width</span><span class="s0">,</span><span class="s1">apple_rect.height)</span>
+
+        <span class="s1">pygame.draw.rect(screen</span><span class="s0">, </span><span class="s1">(</span><span class="s2">176</span><span class="s0">, </span><span class="s2">209</span><span class="s0">, </span><span class="s2">61</span><span class="s1">)</span><span class="s0">, </span><span class="s1">bg_rect)</span>
+        <span class="s1">screen.blit(text</span><span class="s0">, </span><span class="s1">score_rect)</span>
+        <span class="s1">screen.blit(apple</span><span class="s0">,</span><span class="s1">apple_rect)</span>
+        <span class="s1">pygame.draw.rect(screen</span><span class="s0">, </span><span class="s1">(</span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span><span class="s0">, </span><span class="s1">bg_rect</span><span class="s0">,</span><span class="s2">2</span><span class="s1">)</span>
+<span class="s0">class </span><span class="s1">Button:</span>
+    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">,</span><span class="s1">text</span><span class="s0">,</span><span class="s1">width</span><span class="s0">,</span><span class="s1">height</span><span class="s0">,</span><span class="s1">pos</span><span class="s0">, </span><span class="s1">elevaition):</span>
+        <span class="s1">self.elevaition = elevaition</span>
+        <span class="s1">self.dynamic_elevaition = elevaition</span>
+        <span class="s1">self.original_y_pos = pos[</span><span class="s2">1</span><span class="s1">]</span>
+
+
+        <span class="s1">gui_font = pygame.font.Font(</span><span class="s0">None,</span><span class="s2">30</span><span class="s1">)</span>
+        <span class="s1">self.pressed = </span><span class="s0">False</span>
+        <span class="s1">self.top_rect = pygame.Rect((pos)</span><span class="s0">,</span><span class="s1">(width</span><span class="s0">,</span><span class="s1">height))</span>
+        <span class="s1">self.top_color = </span><span class="s3">&quot;Blue&quot;</span>
+
+        <span class="s1">self.bottom_rect = pygame.Rect(pos</span><span class="s0">,</span><span class="s1">(width</span><span class="s0">, </span><span class="s1">elevaition))</span>
+        <span class="s1">self.bottom_color = </span><span class="s3">&quot;Black&quot;</span>
+
+        <span class="s1">self.text_surf = gui_font.render(text</span><span class="s0">,True,</span><span class="s3">&quot;White&quot;</span><span class="s1">)</span>
+        <span class="s1">self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)</span>
+    <span class="s0">def </span><span class="s1">Update(self):</span>
+        <span class="s1">self.draw()</span>
+        <span class="s1">self.check_click()</span>
+
+
+    <span class="s0">def </span><span class="s1">draw(self):</span>
+        <span class="s1">self.top_rect.y = self.original_y_pos - self.dynamic_elevaition</span>
+        <span class="s1">self.text_rect.center = self.top_rect.center</span>
+
+        <span class="s1">pygame.draw.rect(screen</span><span class="s0">,</span><span class="s1">self.bottom_color</span><span class="s0">,</span><span class="s1">self.bottom_rect</span><span class="s0">,</span><span class="s1">border_radius = </span><span class="s2">12</span><span class="s1">)</span>
+        <span class="s1">pygame.draw.rect(screen</span><span class="s0">,</span><span class="s1">self.top_color</span><span class="s0">,</span><span class="s1">self.top_rect</span><span class="s0">, </span><span class="s1">border_radius = </span><span class="s2">12</span><span class="s1">)</span>
+        <span class="s1">screen.blit(self.text_surf</span><span class="s0">,</span><span class="s1">self.text_rect)</span>
+
+        <span class="s1">self.bottom_rect.midtop = self.top_rect.midtop</span>
+        <span class="s1">self.bottom_rect.height = self.top_rect.height + self.dynamic_elevaition</span>
+    <span class="s0">def </span><span class="s1">restart(self):</span>
+
+        <span class="s1">snake.body[</span><span class="s2">0</span><span class="s1">:] = [Vector2(</span><span class="s2">7</span><span class="s0">, </span><span class="s2">8</span><span class="s1">)</span><span class="s0">, </span><span class="s1">Vector2(</span><span class="s2">6</span><span class="s0">, </span><span class="s2">8</span><span class="s1">)</span><span class="s0">, </span><span class="s1">Vector2(</span><span class="s2">5</span><span class="s0">, </span><span class="s2">8</span><span class="s1">)]</span>
+        <span class="s0">for </span><span class="s1">index</span><span class="s0">,</span><span class="s1">block </span><span class="s0">in </span><span class="s1">enumerate(snake.body):</span>
+            <span class="s1">snake.snake_rect = pygame.Rect(int(block.x * cell_size)</span><span class="s0">, </span><span class="s1">int(block.y * cell_size)</span><span class="s0">, </span><span class="s1">cell_size</span><span class="s0">, </span><span class="s1">cell_size)</span>
+
+        <span class="s0">return </span><span class="s1">snake.body[</span><span class="s2">0</span><span class="s1">:]</span><span class="s0">,</span><span class="s1">snake.snake_rect</span><span class="s0">,</span>
+
+
+
+
+
+
+
+
+
+
+
+
+    <span class="s0">def </span><span class="s1">check_click(self):</span>
+        <span class="s0">global </span><span class="s1">game_over</span><span class="s0">, </span><span class="s1">run</span>
+        <span class="s1">mouse_pos = pygame.mouse.get_pos()</span>
+        <span class="s0">if </span><span class="s1">self.top_rect.collidepoint(mouse_pos):</span>
+            <span class="s1">self.top_color = </span><span class="s3">&quot;Blue&quot;</span>
+            <span class="s0">if </span><span class="s1">pygame.mouse.get_pressed()[</span><span class="s2">0</span><span class="s1">]:</span>
+                <span class="s1">self.dynamic_elevaition = </span><span class="s2">0</span>
+                <span class="s1">self.pressed = </span><span class="s0">True</span>
+                <span class="s1">game_over = </span><span class="s0">False</span>
+                <span class="s1">self.Restart()</span>
+                <span class="s1">run = </span><span class="s0">False</span>
+
+
+
+
+
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s0">if </span><span class="s1">self.pressed == </span><span class="s0">True</span><span class="s1">:</span>
+                    <span class="s1">self.dynamic_elevaition = self.elevaition</span>
+                    <span class="s1">self.pressed = </span><span class="s0">False</span>
+                    <span class="s4">#funktion</span>
+        <span class="s0">else</span><span class="s1">:</span>
+            <span class="s1">self.dynamic_elevaition = self.elevaition</span>
+            <span class="s1">self.top_color = </span><span class="s3">&quot;Blue&quot;</span>
+
+
+
+
+
+
+<span class="s1">FPS = pygame.time.Clock()</span>
+<span class="s1">apple = pygame.image.load(</span><span class="s3">&quot;apple.png&quot;</span><span class="s1">).convert_alpha()</span>
+
+<span class="s1">game_over = </span><span class="s0">False</span>
+
+<span class="s1">button1 = Button(</span><span class="s3">&quot;Restart&quot;</span><span class="s0">,</span><span class="s2">200</span><span class="s0">,</span><span class="s2">40</span><span class="s0">,</span><span class="s1">(</span><span class="s2">250</span><span class="s0">,</span><span class="s2">250</span><span class="s1">)</span><span class="s0">, </span><span class="s2">7</span><span class="s1">)</span>
+<span class="s1">button2 = Button(</span><span class="s3">&quot;Settings&quot;</span><span class="s0">,</span><span class="s2">200</span><span class="s0">,</span><span class="s2">40</span><span class="s0">,</span><span class="s1">(</span><span class="s2">250</span><span class="s0">,</span><span class="s2">400</span><span class="s1">)</span><span class="s0">, </span><span class="s2">7</span><span class="s1">)</span>
+<span class="s1">SCRREEN_UPDATE = pygame.USEREVENT</span>
+<span class="s1">pygame.time.set_timer(SCRREEN_UPDATE</span><span class="s0">,</span><span class="s2">100</span><span class="s1">)</span>
+<span class="s1">main_game = Main()</span>
+<span class="s1">snake = Snake()</span>
+<span class="s0">while </span><span class="s1">go:</span>
+    <span class="s0">if not </span><span class="s1">game_over:</span>
+        <span class="s1">screen.fill((</span><span class="s2">0</span><span class="s0">,</span><span class="s2">90</span><span class="s0">,</span><span class="s2">10</span><span class="s1">))</span>
+        <span class="s1">snake.draw_grass()</span>
+        <span class="s0">for </span><span class="s1">event </span><span class="s0">in </span><span class="s1">pygame.event.get():</span>
+            <span class="s1">main_game.Quit()</span>
+            <span class="s0">if </span><span class="s1">event.type == SCRREEN_UPDATE:</span>
+                 <span class="s1">main_game.update()</span>
+            <span class="s1">main_game.movement()</span>
+        <span class="s1">main_game.counter()</span>
+
+
+
+
+    <span class="s1">main_game.draw_elements()</span>
+    <span class="s1">pygame.display.flip()</span>
+    <span class="s1">FPS.tick(</span><span class="s2">60</span><span class="s1">)</span>
+
+</pre>
+</body>
+</html>
