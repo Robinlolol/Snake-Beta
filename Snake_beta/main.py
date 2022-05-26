@@ -568,6 +568,32 @@ class Button:
         else:
             self.dynamic_elevaition = self.elevaition
             self.top_color = "Blue"
+    def show_highscore_history(self):
+        global show_history
+        show_history = True
+    def update_show_history(self):
+        self.draw()
+        self.check_click_save_highscore()
+
+    def check_click_history(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.top_rect.collidepoint(mouse_pos):
+            self.top_color = "Blue"
+            if pygame.mouse.get_pressed()[0]:
+                self.dynamic_elevaition = 0
+                self.pressed = True
+                self.show_highscore_history()
+                return
+            else:
+                if self.pressed == True:
+                    self.dynamic_elevaition = self.elevaition
+                    self.pressed = False
+        else:
+            self.dynamic_elevaition = self.elevaition
+            self.top_color = "Blue"
+
+
+
 
 
 
@@ -636,15 +662,23 @@ volume_got_clicked = False
 draw_volume = False
 hit_portal = False
 save_highscore = False
+show_history = False
 
 
 
-save_highscore_Button = Button("Save your new Highscore",screen_width // 3,40,(screen_width // 2 - screen_width // 6,325), 7,None)
+
 button1 = Button("Restart",screen_width // 3,40,(screen_width // 2 - screen_width // 6,250), 7,None)
-button_back_home = Button("Back to Menu",200,40,(50,600),7,None)
-button2 = Button("Settings",screen_width // 3,40,(screen_width // 2 - screen_width // 6,400), 7, None)
-button_difficulty = Button("Difficulty LVL",200,40,(50,240), 7, None)
+
+button_show_history = Button("Show Highscore History",screen_width // 3,40,(screen_width // 2 - screen_width // 6,400), 7, None)
+save_highscore_Button = Button("Save Highscore",screen_width // 3,40,(screen_width // 2 - screen_width // 6,325), 7,None)
+
+
+button2 = Button("Settings",screen_width // 3,40,(screen_width // 2 - screen_width // 6,475), 7, None)
+
 button_volume = Button("Volume",200,40,(50,375),7,None)
+button_difficulty = Button("Difficulty LVL",200,40,(50,240), 7, None)
+button_back_home = Button("Back to Menu",200,40,(50,600),7,None)
+
 game_speed = 100
 volume = Volume()
 SCRREEN_UPDATE = pygame.USEREVENT
@@ -708,6 +742,7 @@ while go:
         main_game.Highscore()
         button1.Update_restart()
         button2.Update_settings()
+        button_show_history.update_show_history()
         save_highscore_Button.update_save_highscore( )
 
         for event in events:
@@ -717,6 +752,7 @@ while go:
                 json.dump(Highscore_dictionary, highscore_saved)
             print("ok")
             save_highscore = False
+
 
 
 
