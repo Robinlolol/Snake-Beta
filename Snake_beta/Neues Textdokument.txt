@@ -1,0 +1,13 @@
+{
+    "Highscores_history": 
+    {
+        "0highscore": 2
+    },
+    "Time_set":
+    {
+    },
+    "fore_numbers":
+    [
+	3
+    ]
+}
